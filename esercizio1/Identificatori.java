@@ -1,3 +1,4 @@
+package esercizio1;
 public class Identificatori
 {
     public static boolean scan(String s)
@@ -41,6 +42,11 @@ public class Identificatori
 	return state == 1;
     }
 
+
+
+
+
+	//test
     public static void main(String[] args)
     {
 	String[] valid = {"x", "flag1", "x2y2", "x_1", "lft_lab", "_temp", "x_1_y_2", "x___", "__5"};

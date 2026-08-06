@@ -1,3 +1,4 @@
+package esercizio1;
 public class Commenti
 {
     public static boolean scan(String s)

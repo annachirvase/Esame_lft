@@ -1,3 +1,4 @@
+package esercizio2;
 public class Tag {
     public final static int
 	EOF = -1, NUM = 256, ID = 257, 
