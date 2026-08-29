@@ -1,0 +1,37 @@
+⟨prog⟩ ::= ⟨statlist⟩ EOF
+
+⟨statlist⟩ ::= ⟨stat⟩ ⟨statlistp⟩
+
+⟨statlistp⟩ ::= ; ⟨stat⟩ ⟨statlistp⟩ | ε
+
+⟨stat⟩ ::= print [ ⟨exprlist⟩ ]
+        | ID := ⟨statp⟩
+        | while ( ⟨bexpr ⟩ ) do ⟨stat⟩
+        | conditional [ ⟨caselist⟩ ] default ⟨stat⟩
+        | { ⟨statlist⟩ }
+
+⟨statp⟩::=⟨expr ⟩ | user 
+
+⟨caselist⟩ ::= ⟨caseitem⟩ ⟨caselistp⟩
+
+⟨caselistp⟩ ::= ⟨caseitem⟩ ⟨caselistp⟩ | ε
+
+⟨caseitem⟩ ::= case ( ⟨bexpr ⟩ ) do ⟨stat⟩ ⟨caseitemb⟩
+
+⟨caseitemb⟩::=break | ε
+
+⟨bexpr ⟩ ::= ⟨relop⟩ ⟨expr ⟩ ⟨expr ⟩
+
+⟨expr ⟩ ::= +⟨exprp⟩
+        | *⟨exprp ⟩
+        | - ⟨expr ⟩ ⟨expr ⟩
+        | / ⟨expr ⟩ ⟨expr ⟩
+        | NUM | ID
+
+⟨exprp ⟩::= ⟨expr ⟩ ⟨expr ⟩ | [ ⟨exprlist⟩ ]
+
+⟨exprlist⟩ ::= ⟨expr ⟩ ⟨exprlistp⟩
+
+⟨exprlistp⟩ ::= , ⟨expr ⟩ ⟨exprlistp⟩ | ε
+
+⟨relop⟩ ::= >= | <= | == | > | < | !=

@@ -1,6 +1,6 @@
 package esercizio2;
 import java.io.*; 
-import java.util.*;
+
 
 public class Lexer {
     // current line number of input file
@@ -46,6 +46,7 @@ public class Lexer {
                     while (peek != '\n' && peek !=(char)-1) {
                         readch(br);  
                     }
+                    if(peek == '\n') line++;
                     advance = true;
                     return lexical_scan(br);
                 } else if(peek=='*'){
