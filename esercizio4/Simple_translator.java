@@ -22,7 +22,7 @@ public class Simple_translator {
   }
 
   void error(String s) {
-    throw new Error("near line " + lex.line + ": " + s);
+    throw new Error("near line " + Lexer.line + ": " + s);
   }
     
   void match(int t) {
