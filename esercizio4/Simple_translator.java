@@ -35,7 +35,9 @@ public class Simple_translator {
   public void prog() {        
     switch(look.tag) {
       case Tag.PRINT: 	    
-      case Tag.CONDITIONAL: 	    
+      case Tag.CONDITIONAL:
+      case Tag.ID:
+      case Tag.WHILE:
       case '{':
         int lnext_prog = code.newLabel();
         statlist(lnext_prog);
@@ -56,7 +58,9 @@ public class Simple_translator {
   public void statlist(int lnext) {        
     switch(look.tag) {
       case Tag.PRINT: 	    
-      case Tag.CONDITIONAL: 	    
+      case Tag.CONDITIONAL:
+      case Tag.ID:
+      case Tag.WHILE:
       case '{':
         int lnext_statlist = code.newLabel();
         stat(lnext_statlist);
@@ -97,15 +101,50 @@ public class Simple_translator {
         match(']');
         code.emit(OpCode.GOto,lnext);
         break;
+
       case Tag.CONDITIONAL:
         match(Tag.CONDITIONAL);
-        match('(');
-        int ltrue_cond = code.newLabel();
-        bexpr(ltrue_cond,lnext);
-        match(')');
-        code.emitLabel(ltrue_cond);
-        stat(lnext);
+        match('[');
+          int ldefault = code.newLabel();
+          caselist(lnext, ldefault);
+        match(']');
+        match(Tag.DEFAULT);
+          code.emitLabel(ldefault);
+          stat(lnext);
         break;
+
+      case Tag.ID:
+        String id_name= ((Word)look).lexeme;
+        match(Tag.ID);
+          int id_addr = st.lookupAddress(id_name);
+            if (id_addr==-1) {
+              id_addr = count;
+              st.insert(id_name, count++);
+            }
+        match(Tag.ASSIGN);
+            if (look.tag == Tag.USER) {
+              match(Tag.USER);
+              code.emit(OpCode.invokestatic, 0);
+            }else{
+              expr();
+            }
+          code.emit(OpCode.istore, id_addr);
+          code.emit(OpCode.GOto,lnext);
+          break;
+
+      case Tag.WHILE:
+        match(Tag.WHILE);
+        match('(');
+          int lstart = code.newLabel();
+            code.emitLabel(lstart);
+          int ltrue = code.newLabel();
+          bexpr(ltrue, lnext);
+          match(')');
+          match(Tag.DO);
+            code.emitLabel(ltrue);
+          stat(lstart);
+          break;  
+      
       case '{':
         match('{');
         statlist(lnext);
@@ -114,6 +153,46 @@ public class Simple_translator {
       default:
         error("Error in grammar (stat) with " + look);
         break;
+    }
+  }
+
+ private void caselist(int lnext, int ldefault) {
+    if (look.tag == Tag.CASE) {
+        int lnext_case = code.newLabel();
+        caseitem(lnext, lnext_case);
+        code.emitLabel(lnext_case);
+        caselistp(lnext, ldefault);
+    } else {
+        error("Error in caselist");
+    }
+  }
+
+  private void caselistp(int lnext, int ldefault) {
+    switch (look.tag) {
+        case Tag.CASE:
+            int lnext_case = code.newLabel();
+            caseitem(lnext, lnext_case);
+            code.emitLabel(lnext_case);
+            caselistp(lnext, ldefault);
+            break;
+
+        default:
+            break;
+    }
+}
+
+  private void caseitem(int lnext, int lnext_case) {
+    switch(look.tag) {
+      case Tag.CASE:
+        match(Tag.CASE);
+        match('(');
+          int ltrue = code.newLabel();
+          bexpr(ltrue, lnext_case);
+          match(')');
+          match(Tag.DO);
+          code.emitLabel(ltrue);
+          stat(lnext);
+          break;
     }
   }
             
@@ -152,6 +231,10 @@ public class Simple_translator {
       case Tag.GE:
       case Tag.EQ:
       case Tag.NE:
+      case ';':
+      case '}':
+      case Tag.DO:
+      case Tag.EOF:
         break;        
       default:
         error("Error in grammar (exprp) with " + look);
@@ -195,6 +278,10 @@ public class Simple_translator {
       case Tag.GE:
       case Tag.EQ:
       case Tag.NE:
+      case ';':
+      case '}':
+      case Tag.DO:
+      case Tag.EOF:
         break;        
       default:
         error("Error in grammar (termp) with " + look);
