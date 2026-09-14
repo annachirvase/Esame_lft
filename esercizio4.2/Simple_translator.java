@@ -201,9 +201,16 @@ public class Simple_translator {
     switch(look.tag) {
       case '+':
         match('+');
-        expr();
-        expr();
-        code.emit(OpCode.iadd);
+        if (look.tag == '[') {  // È +[ (somma di lista)
+          match('[');
+          exprlist();
+          match(']');
+          // emit per somma lista
+        } else {  // È + binario
+          expr();
+          expr();
+          code.emit(OpCode.iadd);
+        }
         break;
       case '-':
         match('-');
@@ -213,9 +220,16 @@ public class Simple_translator {
         break;
       case '*':
         match('*');
-        expr();
-        expr();
-        code.emit(OpCode.imul);
+        if (look.tag == '[') {  // È +[ (somma di lista)
+          match('[');
+          exprlist();
+          match(']');
+          // emit per somma lista
+        } else {
+          expr();
+          expr();
+          code.emit(OpCode.imul);
+        }
         break;
       case '/':
         match('/');
