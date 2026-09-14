@@ -198,67 +198,65 @@ public class Simple_translator {
   }
             
   private void expr() {
-    switch(look.tag) {
-      case '+':
-        match('+');
-        if (look.tag == '[') {  // È +[ (somma di lista)
-          match('[');
-          exprlist();
-          match(']');
-          // emit per somma lista
-        } else {  // È + binario
-          expr();
-          expr();
-          code.emit(OpCode.iadd);
-        }
-        break;
-      case '-':
-        match('-');
+  switch(look.tag) {
+    case '+':
+      match('+');
+      if (look.tag == '[') {
+        match('[');
+        exprlist();
+        match(']');
+      } else {
         expr();
         expr();
-        code.emit(OpCode.isub);
-        break;
-      case '*':
-        match('*');
-        if (look.tag == '[') {  // È +[ (somma di lista)
-          match('[');
-          exprlist();
-          match(']');
-          // emit per somma lista
-        } else {
-          expr();
-          expr();
-          code.emit(OpCode.imul);
-        }
-        break;
-      case '/':
-        match('/');
+        code.emit(OpCode.iadd);
+      }
+      break;
+    case '-':
+      match('-');
+      expr();
+      expr();
+      code.emit(OpCode.isub);
+      break;
+    case '*':
+      match('*');
+      if (look.tag == '[') {
+        match('[');
+        exprlist();
+        match(']');
+      } else {
         expr();
         expr();
-        code.emit(OpCode.idiv);
-        break;
-      case Tag.NUM:
-        code.emit(OpCode.ldc,((NumberTok)look).value);
-        match(Tag.NUM);                
-        break;
-      case Tag.ID:
-        int id_addr = st.lookupAddress(((Word)look).lexeme);
-        if (id_addr != -1) {
-          code.emit(OpCode.iload,id_addr);
-          match(Tag.ID);
-        }
-        else
-          error("Unknown variable");
-        break;
-      case '(':
-        match('(');
-        expr();
-        match(')');
-        break;
-      default:
-        error("Error in grammar (expr) with " + look);	
-    }
+        code.emit(OpCode.imul);
+      }
+      break;
+    case '/':
+      match('/');
+      expr();
+      expr();
+      code.emit(OpCode.idiv);
+      break;
+    case Tag.NUM:
+      code.emit(OpCode.ldc,((NumberTok)look).value);
+      match(Tag.NUM);                
+      break;
+    case Tag.ID:
+      int id_addr = st.lookupAddress(((Word)look).lexeme);
+      if (id_addr != -1) {
+        code.emit(OpCode.iload,id_addr);
+        match(Tag.ID);
+      }
+      else
+        error("Unknown variable");
+      break;
+    case '(':
+      match('(');
+      expr();
+      match(')');
+      break;
+    default:
+      error("Error in grammar (expr) with " + look);	
   }
+}
  
   private void exprlist() {
     expr();
