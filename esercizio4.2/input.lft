@@ -1,4 +1,4 @@
 x:=user;
 conditional[
-  case(== x 1) do print[100]
+  case(= x 1) do print[100]
 ] default print[x]
