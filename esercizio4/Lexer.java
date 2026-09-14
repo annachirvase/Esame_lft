@@ -208,6 +208,7 @@ public class Lexer {
                         case "default":
                             return Word.t_default;
                         case "user":
+                        case "read":
                             return Word.t_user;
                         default:
                             return new Word(Tag.ID,s);
