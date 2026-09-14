@@ -1,0 +1,6 @@
+x:=user;
+conditional[
+  case(= x 1) do print[100]
+  case(= x 2) do print[200]
+  case(= x 3) do print[300]
+] default print[999]

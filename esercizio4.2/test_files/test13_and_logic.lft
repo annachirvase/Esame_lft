@@ -1,0 +1,4 @@
+x:=5;
+y:=15;
+while(&& < x 10 > y 10) do x:=+ x 1;
+print[x]

@@ -1,0 +1,6 @@
+x:=user;
+conditional[
+  case(< x 10) do print[1]
+  case(&& >= x 10 < x 20) do print[2]
+  case(>= x 20) do print[3]
+] default print[0]
