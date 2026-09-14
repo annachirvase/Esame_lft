@@ -143,6 +143,7 @@ public class Simple_translator {
           match(Tag.DO);
             code.emitLabel(ltrue);
           stat(lstart);
+          code.emit(OpCode.GOto,lstart);
           break;  
       
       case '{':

@@ -1,7 +1,7 @@
 import java.io.*;
-
+ 
 public class Simple_translator {
-
+ 
   private Lexer lex;
   private BufferedReader pbr;
   private Token look;
@@ -9,7 +9,7 @@ public class Simple_translator {
   SymbolTable st = new SymbolTable();
   CodeGenerator code = new CodeGenerator();
   int count=0;
-
+ 
   public Simple_translator(Lexer l, BufferedReader br) {
     lex = l;
     pbr = br;
@@ -20,7 +20,7 @@ public class Simple_translator {
     look = lex.lexical_scan(pbr);
     System.out.println("token = " + look);
   }
-
+ 
   void error(String s) {
     throw new Error("near line " + Lexer.line + ": " + s);
   }
@@ -31,7 +31,7 @@ public class Simple_translator {
     } else 
       error("syntax error with " + look + ", was expecting " + t);
   }
-
+ 
   public void prog() {        
     switch(look.tag) {
       case Tag.PRINT: 	    
@@ -54,7 +54,7 @@ public class Simple_translator {
         error("Error in grammar (prog) with " + look);	
     }
   }
-
+ 
   public void statlist(int lnext) {        
     switch(look.tag) {
       case Tag.PRINT: 	    
@@ -71,7 +71,7 @@ public class Simple_translator {
         error("Error in grammar (statlist) with " + look);	
     }
   }
-
+ 
   public void statlistp(int lnext) {
     switch(look.tag) {
       case ';':
@@ -90,18 +90,18 @@ public class Simple_translator {
         break; 
     }
   }
-
+ 
   public void stat(int lnext) {
     switch(look.tag) {
       case Tag.PRINT:
         match(Tag.PRINT);
         match('[');
-        expr();
+        exprlist();
         code.emit(OpCode.invokestatic,1);
         match(']');
         code.emit(OpCode.GOto,lnext);
         break;
-
+ 
       case Tag.CONDITIONAL:
         match(Tag.CONDITIONAL);
         match('[');
@@ -112,7 +112,7 @@ public class Simple_translator {
           code.emitLabel(ldefault);
           stat(lnext);
         break;
-
+ 
       case Tag.ID:
         String id_name= ((Word)look).lexeme;
         match(Tag.ID);
@@ -131,7 +131,7 @@ public class Simple_translator {
           code.emit(OpCode.istore, id_addr);
           code.emit(OpCode.GOto,lnext);
           break;
-
+ 
       case Tag.WHILE:
         match(Tag.WHILE);
         match('(');
@@ -142,8 +142,8 @@ public class Simple_translator {
           match(')');
           match(Tag.DO);
             code.emitLabel(ltrue);
-          stat(lstart);
-          code.emit(OpCode.GOto, lstart);
+          stat(lnext);
+          code.emit(OpCode.GOto,lstart);
           break;  
       
       case '{':
@@ -156,7 +156,7 @@ public class Simple_translator {
         break;
     }
   }
-
+ 
  private void caselist(int lnext, int ldefault) {
     if (look.tag == Tag.CASE) {
         int lnext_case = code.newLabel();
@@ -167,7 +167,7 @@ public class Simple_translator {
         error("Error in caselist");
     }
   }
-
+ 
   private void caselistp(int lnext, int ldefault) {
     switch (look.tag) {
         case Tag.CASE:
@@ -176,12 +176,12 @@ public class Simple_translator {
             code.emitLabel(lnext_case);
             caselistp(lnext, ldefault);
             break;
-
+ 
         default:
             break;
     }
 }
-
+ 
   private void caseitem(int lnext, int lnext_case) {
     switch(look.tag) {
       case Tag.CASE:
@@ -199,102 +199,29 @@ public class Simple_translator {
             
   private void expr() {
     switch(look.tag) {
-      case '(':
-      case Tag.NUM:
-      case Tag.ID:    
-        term();	    
-        exprp();
-        break;
-      default:
-        error("Error in grammar (expr) with " + look);	
-    }
-  }
-    
-  private void exprp() {
-    switch(look.tag) {
       case '+':
         match('+');
-        term();
+        expr();
+        expr();
         code.emit(OpCode.iadd);
-        exprp();
         break;
       case '-':
         match('-');
-        term();
+        expr();
+        expr();
         code.emit(OpCode.isub);
-        exprp();
         break;
-      case ')':
-      case ']':
-      case '<':
-      case '>':
-      case Tag.LE:
-      case Tag.GE:
-      case Tag.EQ:
-      case Tag.NE:
-      case ';':
-      case '}':
-      case Tag.DO:
-      case Tag.EOF:
-        break;        
-      default:
-        error("Error in grammar (exprp) with " + look);
-    }
-  }
-    
-  private void term() {
-    switch(look.tag) {
-      case '(':
-      case Tag.NUM:	    
-      case Tag.ID:    
-        fact();
-        termp();
-        break;
-      default:
-    error("Error in grammar (term) with " + look);	
-    }
-  }
-    
-  private void termp() {
-    switch(look.tag) {
       case '*':
         match('*');
-        fact();
+        expr();
+        expr();
         code.emit(OpCode.imul);
-        termp();
         break;
       case '/':
         match('/');
-        fact();
-        code.emit(OpCode.idiv);
-        termp();
-        break;
-      case '+':
-      case '-':
-      case ')':
-      case ']':
-      case '<':
-      case '>':
-      case Tag.LE:
-      case Tag.GE:
-      case Tag.EQ:
-      case Tag.NE:
-      case ';':
-      case '}':
-      case Tag.DO:
-      case Tag.EOF:
-        break;        
-      default:
-        error("Error in grammar (termp) with " + look);
-    }
-  }
-    
-  private void fact() {
-    switch (look.tag) {
-      case '(':
-        match('(');
         expr();
-        match(')');
+        expr();
+        code.emit(OpCode.idiv);
         break;
       case Tag.NUM:
         code.emit(OpCode.ldc,((NumberTok)look).value);
@@ -309,50 +236,78 @@ public class Simple_translator {
         else
           error("Unknown variable");
         break;
+      case '(':
+        match('(');
+        expr();
+        match(')');
+        break;
       default:
-        error("Error in grammar (fact) with " + look);
+        error("Error in grammar (expr) with " + look);	
     }
   }
-
+ 
+  private void exprlist() {
+    expr();
+    exprlistp();
+  }
+ 
+  private void exprlistp() {
+    switch(look.tag) {
+      case ',':
+        match(',');
+        expr();
+        code.emit(OpCode.iadd);
+        exprlistp();
+        break;
+      case ']':
+      case ')':
+      case ';':
+      case '}':
+      case Tag.EOF:
+        break;
+      default:
+        error("Error in grammar (exprlistp) with " + look);
+    }
+  }
+ 
   private void bexpr(int ltrue, int lfalse) {
     switch(look.tag) {
-      case Tag.AND: // Caso && B1 B2 (notazione prefissa)
+      case Tag.AND:
         match(Tag.AND);
         int ltrue_b1 = code.newLabel();
         bexpr(ltrue_b1, lfalse);
         code.emitLabel(ltrue_b1);
         bexpr(ltrue, lfalse);
         break;
-
-      case Tag.OR: // Caso || B1 B2 (notazione prefissa)
+ 
+      case Tag.OR:
         match(Tag.OR);
         int lfalse_b1 = code.newLabel();
         bexpr(ltrue, lfalse_b1);
         code.emitLabel(lfalse_b1);
         bexpr(ltrue, lfalse);
         break;
-
+ 
       case '<':
       case '>':
       case Tag.LE:
       case Tag.GE:
       case Tag.EQ:
       case Tag.NE:
-        // Caso relazione prefissa: relop expr1 expr2 (es: < x 10)
         OpCode opcode = relop();
         expr();
         expr();
-        code.emit(opcode, ltrue);
-        code.emit(OpCode.GOto, lfalse);
+        code.emit(opcode,ltrue);
+        code.emit(OpCode.GOto,lfalse);
         break;
-
+ 
       default:
         error("Error in grammar (bexpr) with " + look); 
     }
   }
-
+ 
   private OpCode relop() {
-    OpCode opcode = OpCode.if_icmplt; // initialised only to avoid error
+    OpCode opcode = OpCode.if_icmplt;
     switch(look.tag) {
       case '<':
         match('<');
@@ -383,7 +338,7 @@ public class Simple_translator {
     }
     return opcode;
   }
-
+ 
   public static void main(String[] args) {
     Lexer lex = new Lexer();
     String path = "input.lft";
