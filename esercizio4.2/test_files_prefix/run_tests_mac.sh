@@ -1,29 +1,24 @@
 #!/bin/sh
 
-# Script di test per macOS - senza array associativi
-# Testa tutti i file .lft nella directory corrente
-
 PASSED=0
 FAILED=0
 CRASHED=0
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║        Test Suite - Simple_translator (30 test)            ║"
+echo "║    Test Suite - Simple_translator P PREFISSO (27 test)    ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Lista di test che NON dovrebbero crashare
-PASS_TESTS="test01_simple test03_assignment test05_addition test06_precedence test07_division test08_parentheses test09_while_lt test10_while_gt test11_while_le test12_while_ne test13_and_logic test14_or_logic test15_nested_logic test16_conditional_simple test17_conditional_multi test18_conditional_complex test19_blocks test20_while_block test21_conditional_noblock test22_many_vars test26_mult_div test27_while_false test28_complex_precedence test29_subtraction test30_ge"
+PASS_TESTS="test01_simple test02_addition test03_subtraction test04_multiply test05_division test06_nested_expr test07_assignment test08_assignment_expr test10_while_lt test11_while_gt test12_while_le test13_while_ge test14_while_eq test15_and_logic test16_or_logic test17_nested_logic test18_conditional_simple test19_conditional_multi test20_conditional_complex test21_blocks test22_while_block test23_many_vars test24_sum_list test25_mult_list test26_while_false"
 
-# Lista di test che DEVONO crashare
-CRASH_TESTS="test02_undefined_var test23_error_undefined test24_error_syntax test25_error_operator"
+CRASH_TESTS="test27_error_undefined"
 
 # Compila il traduttore se non già compilato
 if [ ! -f "../Simple_translator.class" ]; then
     echo "⚙️  Compilando Simple_translator.java..."
     cd ..
     javac Simple_translator.java
-    cd test_files
+    cd test_files_prefix
     echo ""
 fi
 
@@ -35,7 +30,7 @@ for test_file in test*.lft; do
     
     test_name="${test_file%.*}"
     
-    echo -n "[$test_name] ... "
+    printf "[%-30s] " "$test_name"
     
     # Copia il file in input.lft (un livello su)
     cp "$test_file" ../input.lft
@@ -44,11 +39,10 @@ for test_file in test*.lft; do
     cd ..
     output=$(java Simple_translator 2>&1)
     exit_code=$?
-    cd test_files
+    cd test_files_prefix
     
     # Determina il risultato
     if [ $exit_code -eq 0 ]; then
-        # Controlla se era un test che doveva passare
         if echo "$PASS_TESTS" | grep -q "$test_name"; then
             echo "✅ PASS"
             ((PASSED++))
@@ -57,7 +51,6 @@ for test_file in test*.lft; do
             ((PASSED++))
         fi
     else
-        # Controlla se era un test che doveva crashare
         if echo "$CRASH_TESTS" | grep -q "$test_name"; then
             echo "✅ CRASH (expected)"
             ((PASSED++))
@@ -66,12 +59,6 @@ for test_file in test*.lft; do
             ((FAILED++))
         fi
         ((CRASHED++))
-    fi
-    
-    # Mostra primo errore se c'è stato
-    if [ $exit_code -ne 0 ]; then
-        error_line=$(echo "$output" | head -1)
-        echo "   → $error_line"
     fi
 done
 

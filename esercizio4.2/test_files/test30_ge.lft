@@ -1,3 +1,0 @@
-x:=20;
-while(>= x 15) do x:=- x 1;
-print[x]
