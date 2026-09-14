@@ -22,6 +22,14 @@
 
 ⟨bexpr ⟩ ::= ⟨relop⟩ ⟨expr ⟩ ⟨expr ⟩
 
+
+//per esercizio 4.2
+
+// <bexpr> ::= && bexpr1 bexpr2
+//         | || bexpr1 bexpr2
+//         | expr1 relop expr2
+
+
 ⟨expr ⟩ ::= +⟨exprp⟩
         | *⟨exprp ⟩
         | - ⟨expr ⟩ ⟨expr ⟩
