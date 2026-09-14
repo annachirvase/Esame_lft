@@ -143,6 +143,7 @@ public class Simple_translator {
           match(Tag.DO);
             code.emitLabel(ltrue);
           stat(lstart);
+          code.emit(OpCode.GOto, lstart);
           break;  
       
       case '{':
@@ -315,17 +316,38 @@ public class Simple_translator {
 
   private void bexpr(int ltrue, int lfalse) {
     switch(look.tag) {
-      case '(':
-      case Tag.NUM:
-      case Tag.ID:    
-        expr();
+      case Tag.AND: // Caso && B1 B2 (notazione prefissa)
+        match(Tag.AND);
+        int ltrue_b1 = code.newLabel();
+        bexpr(ltrue_b1, lfalse);
+        code.emitLabel(ltrue_b1);
+        bexpr(ltrue, lfalse);
+        break;
+
+      case Tag.OR: // Caso || B1 B2 (notazione prefissa)
+        match(Tag.OR);
+        int lfalse_b1 = code.newLabel();
+        bexpr(ltrue, lfalse_b1);
+        code.emitLabel(lfalse_b1);
+        bexpr(ltrue, lfalse);
+        break;
+
+      case '<':
+      case '>':
+      case Tag.LE:
+      case Tag.GE:
+      case Tag.EQ:
+      case Tag.NE:
+        // Caso relazione prefissa: relop expr1 expr2 (es: < x 10)
         OpCode opcode = relop();
         expr();
-        code.emit(opcode,ltrue);
-        code.emit(OpCode.GOto,lfalse);
+        expr();
+        code.emit(opcode, ltrue);
+        code.emit(OpCode.GOto, lfalse);
         break;
+
       default:
-        error("Error in grammar (bexpr) with " + look);	
+        error("Error in grammar (bexpr) with " + look); 
     }
   }
 
