@@ -39,12 +39,12 @@ public class Simple_translator {
       case Tag.ID:
       case Tag.WHILE:
       case '{':
-        int lnext_prog = code.newLabel();
-        statlist(lnext_prog);
-        code.emitLabel(lnext_prog);
-        match(Tag.EOF);
+        int lnext_prog = code.newLabel(); // Crea l'etichetta di fine programma
+        statlist(lnext_prog);             // Traduce la lista di istruzioni
+        code.emitLabel(lnext_prog);       // Emette l'etichetta di fine
+        match(Tag.EOF);                   // Assicura il raggiungimento della fine del file
         try {
-          code.toJasmin();
+          code.toJasmin();                // Scrive l'output finale nel file .j per Jasmin
         }
         catch(java.io.IOException e) {
           System.out.println("IO error\n");
@@ -62,10 +62,10 @@ public class Simple_translator {
       case Tag.ID:
       case Tag.WHILE:
       case '{':
-        int lnext_statlist = code.newLabel();
-        stat(lnext_statlist);
-        code.emitLabel(lnext_statlist);
-        statlistp(lnext);
+        int lnext_statlist = code.newLabel();   // Etichetta per la fine della prima istruzione
+        stat(lnext_statlist);                   // Traduce la singola istruzione
+        code.emitLabel(lnext_statlist);         // Emette l'etichetta
+        statlistp(lnext);                       // Continua l'analisi della lista
         break;
       default:
         error("Error in grammar (statlist) with " + look);	
@@ -82,7 +82,7 @@ public class Simple_translator {
         statlistp(lnext);
         break;
       case '}':
-      case Tag.EOF:
+      case Tag.EOF:                   // Caso epsilon: salta alla fine del blocco contenitore
         code.emit(OpCode.GOto,lnext);
         break;
       default:
@@ -105,12 +105,12 @@ public class Simple_translator {
       case Tag.CONDITIONAL:
         match(Tag.CONDITIONAL);
         match('[');
-          int ldefault = code.newLabel();
-          caselist(lnext, ldefault);
+          int ldefault = code.newLabel();       // Etichetta per il ramo default
+          caselist(lnext, ldefault);            // Gestisce i vari rami case
         match(']');
         match(Tag.DEFAULT);
-          code.emitLabel(ldefault);
-          stat(lnext);
+          code.emitLabel(ldefault);             // Punto d'ingresso del ramo default
+          stat(lnext);                          // Esegue l'istruzione default
         break;
 
       case Tag.ID:
@@ -122,27 +122,27 @@ public class Simple_translator {
               st.insert(id_name, count++);
             }
         match(Tag.ASSIGN);
-            if (look.tag == Tag.USER) {
+            if (look.tag == Tag.USER) {                    // Caso lettura da input: ID := read (od user)
               match(Tag.USER);
-              code.emit(OpCode.invokestatic, 0);
+              code.emit(OpCode.invokestatic, 0);  // Invoca la lettura da tastiera Output.readInteger
             }else{
-              expr();
+              expr();                                      // Calcola il valore dell'espressione aritmetica
             }
-          code.emit(OpCode.istore, id_addr);
+          code.emit(OpCode.istore, id_addr);              // Salva il valore dallo stack alla variabile locale
           code.emit(OpCode.GOto,lnext);
           break;
 
       case Tag.WHILE:
         match(Tag.WHILE);
         match('(');
-          int lstart = code.newLabel();
+          int lstart = code.newLabel();       // Etichetta di inizio ciclo (inizio della condizione)
             code.emitLabel(lstart);
-          int ltrue = code.newLabel();
-          bexpr(ltrue, lnext);
+          int ltrue = code.newLabel();        // Etichetta per il corpo del ciclo se la condizione è vera
+          bexpr(ltrue, lnext);                // Valuta la condizione logica
           match(')');
           match(Tag.DO);
-            code.emitLabel(ltrue);
-          stat(lstart);
+            code.emitLabel(ltrue);            // Entra nel corpo del ciclo
+          stat(lstart);                       // Esegue lo statement e torna a valutare la condizione
           code.emit(OpCode.GOto,lstart);
           break;  
       
@@ -159,7 +159,7 @@ public class Simple_translator {
 
  private void caselist(int lnext, int ldefault) {
     if (look.tag == Tag.CASE) {
-        int lnext_case = code.newLabel();
+        int lnext_case = code.newLabel();       // Etichetta di salto al caso successivo se questo fallisce
         caseitem(lnext, lnext_case);
         code.emitLabel(lnext_case);
         caselistp(lnext, ldefault);
@@ -177,7 +177,7 @@ public class Simple_translator {
             caselistp(lnext, ldefault);
             break;
 
-        default:
+            default:                    // Caso epsilon: se nessun case coincide, prosegue verso il default
             break;
     }
 }
@@ -187,12 +187,12 @@ public class Simple_translator {
       case Tag.CASE:
         match(Tag.CASE);
         match('(');
-          int ltrue = code.newLabel();
-          bexpr(ltrue, lnext_case);
+          int ltrue = code.newLabel();        // Etichetta d'esecuzione se la condizione del case è vera
+          bexpr(ltrue, lnext_case);           // Se falsa, salta a lnext_case
           match(')');
           match(Tag.DO);
           code.emitLabel(ltrue);
-          stat(lnext);
+          stat(lnext);                        // Esegue lo statement e salta alla fine del conditional (lnext)
           break;
     }
   }
@@ -215,16 +215,16 @@ public class Simple_translator {
       case '+':
         match('+');
         term();
-        code.emit(OpCode.iadd);
+        code.emit(OpCode.iadd);   // Addizione intera sul top dello stack
         exprp();
         break;
       case '-':
         match('-');
         term();
-        code.emit(OpCode.isub);
+        code.emit(OpCode.isub);   // Sottrazione intera sul top dello stack
         exprp();
         break;
-      case ')':
+      case ')':   // Follow set di ExprP (caso epsilon)
       case ']':
       case '<':
       case '>':
@@ -260,16 +260,16 @@ public class Simple_translator {
       case '*':
         match('*');
         fact();
-        code.emit(OpCode.imul);
+        code.emit(OpCode.imul);     // Moltiplicazione intera sul top dello stack
         termp();
         break;
       case '/':
         match('/');
         fact();
-        code.emit(OpCode.idiv);
+        code.emit(OpCode.idiv);     // Divisione intera sul top dello stack
         termp();
         break;
-      case '+':
+      case '+':                     // Follow set di TermP (caso epsilon)
       case '-':
       case ')':
       case ']':
@@ -297,17 +297,17 @@ public class Simple_translator {
         match(')');
         break;
       case Tag.NUM:
-        code.emit(OpCode.ldc,((NumberTok)look).value);
+        code.emit(OpCode.ldc,((NumberTok)look).value);        // Carica la costante numerica sullo stack
         match(Tag.NUM);                
         break;
       case Tag.ID:
         int id_addr = st.lookupAddress(((Word)look).lexeme);
         if (id_addr != -1) {
-          code.emit(OpCode.iload,id_addr);
+          code.emit(OpCode.iload,id_addr);                    // Carica il valore della variabile sullo stack
           match(Tag.ID);
         }
         else
-          error("Unknown variable");
+          error("Unknown variable");                        // Errore se la variabile non è stata mai dichiarata/assegnata
         break;
       default:
         error("Error in grammar (fact) with " + look);
@@ -319,11 +319,11 @@ public class Simple_translator {
       case '(':
       case Tag.NUM:
       case Tag.ID:    
-        expr();
-        OpCode opcode = relop();
-        expr();
-        code.emit(opcode,ltrue);
-        code.emit(OpCode.GOto,lfalse);
+        expr();                     // Valuta la prima espressione
+        OpCode opcode = relop();    // Ottiene l'istruzione di confronto appropriata
+        expr();                     // Valuta la seconda espressione
+        code.emit(opcode,ltrue);    // Se la condizione vale true, salta a ltrue
+        code.emit(OpCode.GOto,lfalse);  // Altrimenti salta a lfalse
         break;
       default:
         error("Error in grammar (bexpr) with " + look);	
