@@ -1,6 +1,6 @@
+package esercizio1;
 
-public class TreZeri
-{
+public class TreZeri{
     public static boolean scan(String s)
     {
 	int state = 0;
