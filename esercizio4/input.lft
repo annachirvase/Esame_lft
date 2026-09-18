@@ -1,0 +1,60 @@
+// ==========================================
+// 1. STAMPA E ARITMETICA COMPLETA
+// Verifica: precedenza, parentesi, iadd, isub, imul, idiv
+// Risultato atteso: 10
+// ==========================================
+print[(2 + 3 * 4 - (8 / 2))];
+
+// ==========================================
+// 2. ASSEGNAMENTO DA ESPRESSIONE E VARIABILI MULTIPLE
+// Verifica: istore, iload, SymbolTable (assegnamento e lettura)
+// Risultato atteso: 25
+// ==========================================
+x := 10;
+y := x + 15;
+print[y];
+
+// ==========================================
+// 3. ISTRUZIONE CONDIZIONALE (conditional / case / default)
+// Verifica: caselist, caselistp, relop (>, ==, <), salto al default
+// Risultato atteso: 1 (entra nel secondo case)
+// ==========================================
+valore := 50;
+conditional [
+    case (valore < 20) do print[0]
+    case (valore == 50) do print[1]
+    case (valore > 100) do print[2]
+] default print[999];
+
+// ==========================================
+// 4. FALLBACK SU DEFAULT
+// Verifica: esecuzione del ramo 'default' quando nessun case è vero
+// Risultato atteso: 999
+// ==========================================
+conditional [
+    case (valore == 0) do print[100]
+] default print[999];
+
+// ==========================================
+// 5. CICLO WHILE E BLOCCO DI ISTRUZIONI { }
+// Verifica: lstart, ltrue, gestione graffe '{ }', incremento e relop (<=)
+// Risultato atteso: 0, 1, 2
+// ==========================================
+counter := 0;
+while (counter < 3) do {
+    print[counter];
+    counter := counter + 1
+};
+
+// ==========================================
+// 6. BLOCCHI ANNIDATI E SEQUENZE (statlistp con ';')
+// Verifica: scoping/annidamento e sequenze di statement
+// Risultato atteso: 100
+// ==========================================
+{
+    a := 50;
+    {
+        b := a * 2;
+        print[b]
+    }
+}

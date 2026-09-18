@@ -143,7 +143,7 @@ public class Simple_translator {
           match(Tag.DO);
             code.emitLabel(ltrue);                        // Inizio del corpo del ciclo
           int lnext_stat = code.newLabel();               // [FIX] Etichetta per l'uscita dalla stat del corpo
-          stat(lnext);                                    // Esegue l'istruzione del ciclo
+          stat(lnext_stat);                               // !!!!!!!!!Esegue l'istruzione del ciclo
           code.emitLabel(lnext_stat);                     // Emette l'etichetta di fine del corpo
           code.emit(OpCode.GOto,lstart);                  // Salta indietro a lstart per ri-valutare la condizione
           break;  
